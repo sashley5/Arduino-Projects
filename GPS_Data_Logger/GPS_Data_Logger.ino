@@ -1,7 +1,10 @@
+#include <SPI.h>
 #include <SD.h>
 
 const int chipSelect = SDCARD_SS_PIN;
 const int SwitchInputPin = 2;
+const boolean debugMode = false;
+
 // Variable to hold the write counter
 int writeCounter;
 // Variable to hold number of loops between writes
@@ -10,24 +13,31 @@ const int loopsBetweenWrites = 30;
 int numLoops;
 
 void setup() {
+  if (debugMode) {
+     // Open serial communications and wait for port to open:
+     Serial.begin(9600);
+      while (!Serial) {
+        ; // wait for serial port to connect. Needed for native USB port only
+        }
+  }
+   if (debugMode) Serial.print("Initializing SD card...");
+  
   // initialize digital pin for the LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
   // and similarly the switch as an input
   pinMode(SwitchInputPin, INPUT);
   // Initialise the write counter
-  writeCounter = 0;
+  writeCounter = 1000;
   //Initalize the loop counter so it will write on the first time through
   numLoops = loopsBetweenWrites - 1;
    
    // see if the card is present and can be initialized:
 
   if (!SD.begin(chipSelect)) {
-
     // don't do anything more:
-
     while (1);
-
   }
+  if (debugMode) Serial.println("card initialized.");
 }
 //A variable to hold the value of the button - High (TRUE) or Low (FALSE)
 boolean buttonValue;
@@ -57,16 +67,16 @@ void loop() {
        dataString += String(writeCounter);
        dataFile.println(dataString);
        dataFile.close();
+        // print to the serial port too:
+         if (debugMode) Serial.println(dataString);
     }
+     // if the file isn't open, pop up an error:
+     else
+      {
+       if (debugMode) Serial.println("error opening datalog.txt");
+     }
   }
-
-  // if the file isn't open, pop up an error:
-
-  else {
-
-    Serial.println("error opening datalog.txt");
-
-  }
+ 
     digitalWrite(LED_BUILTIN,HIGH);
     delay(1000);
     digitalWrite(LED_BUILTIN,LOW);
