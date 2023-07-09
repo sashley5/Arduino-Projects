@@ -4,12 +4,12 @@
 
 const int chipSelect = SDCARD_SS_PIN;
 const int SwitchInputPin = 2;
-const boolean debugMode = false;
+const boolean debugMode = true;
 
 // Variable to hold the write counter
 int writeCounter;
 // Variable to hold number of loops between writes
-const int loopsBetweenWrites = 60;
+const int loopsBetweenWrites = 30;
 // Variable to hold counter of number of loops
 int numLoops;
 
@@ -28,7 +28,7 @@ void setup() {
   // and similarly the switch as an input
   pinMode(SwitchInputPin, INPUT);
   // Initialise the write counter
-  writeCounter = 1;
+  writeCounter = 0;
   //Initalize the loop counter so it will write on the first time through
   numLoops = loopsBetweenWrites - 1;
    
@@ -105,8 +105,6 @@ void loop() {
      if (dataFile) {
         // Flash LED
         digitalWrite(LED_BUILTIN,HIGH);
-        delay(1000);
-        digitalWrite(LED_BUILTIN,LOW);
         // Build up output string
        dataString = "loop ";
        dataString += String(writeCounter);
@@ -124,21 +122,24 @@ void loop() {
             dataString += " km/h";
             dataString += "Number of satellites: ";
             dataString += String(satellites);
-        }
+        } //end if GPS available
        dataFile.println(dataString);
        dataFile.close();
         // print to the serial port too:
          if (debugMode) Serial.println(dataString);
-    }
+    } // end if dataFile
      // if the file isn't open, pop up an error:
      else
       {
        if (debugMode) Serial.println("error opening datalog.txt");
      }
-  }
-  }
+    } // end if numLoops >= loopsBetweenWrites
+  } // end if buttonValue
   else
   {
     digitalWrite(LED_BUILTIN,LOW);
   }
-}
+  delay(1000);
+  digitalWrite(LED_BUILTIN,LOW);
+  delay(1000);
+} // end loop
