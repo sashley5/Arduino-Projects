@@ -1,5 +1,6 @@
 #include <SPI.h>
 #include <SD.h>
+#include <Arduino_MKRGPS.h>
 
 const int chipSelect = SDCARD_SS_PIN;
 const int SwitchInputPin = 2;
@@ -8,7 +9,7 @@ const boolean debugMode = false;
 // Variable to hold the write counter
 int writeCounter;
 // Variable to hold number of loops between writes
-const int loopsBetweenWrites = 30;
+const int loopsBetweenWrites = 60;
 // Variable to hold counter of number of loops
 int numLoops;
 
@@ -27,7 +28,7 @@ void setup() {
   // and similarly the switch as an input
   pinMode(SwitchInputPin, INPUT);
   // Initialise the write counter
-  writeCounter = 1000;
+  writeCounter = 1;
   //Initalize the loop counter so it will write on the first time through
   numLoops = loopsBetweenWrites - 1;
    
@@ -38,6 +39,14 @@ void setup() {
     while (1);
   }
   if (debugMode) Serial.println("card initialized.");
+
+   // Initalize the GPS shield
+   if (!GPS.begin(GPS_MODE_SHIELD)) {
+     if (debugMode) Serial.println("Failed to initialize GPS!");
+     while (1);
+
+  }
+   if (debugMode) Serial.println("GPS initialized.");
 }
 //A variable to hold the value of the button - High (TRUE) or Low (FALSE)
 boolean buttonValue;
@@ -46,7 +55,13 @@ void loop() {
   // Increment the loop counter
    numLoops++;
   // make a string for assembling the data to log:
-    String dataString = "";
+   String dataString = "";
+   // Define the GPS variables
+   float latitude;
+   float longitude;
+   float altitude;
+   float speed;
+   int  satellites;
   // First read the state of the button
   buttonValue = digitalRead (SwitchInputPin);
   // Now decide what to do
@@ -58,13 +73,58 @@ void loop() {
       writeCounter ++;
       // Reset loop counter
       numLoops = 0;
+      // check if there is new GPS data available
+      if (GPS.available()) {
+         // read GPS values
+          latitude   = GPS.latitude();
+          longitude  = GPS.longitude();
+          altitude   = GPS.altitude();
+          speed      = GPS.speed();
+          satellites = GPS.satellites();
+          if (debugMode) {
+            // print GPS values
+            Serial.print("Location: ");
+            Serial.print(latitude, 7);
+            Serial.print(", ");
+            Serial.println(longitude, 7);
+            Serial.print("Altitude: ");
+            Serial.print(altitude);
+            Serial.println("m");
+            Serial.print("Ground speed: ");
+            Serial.print(speed);
+            Serial.println(" km/h");
+            Serial.print("Number of satellites: ");
+            Serial.println(satellites);
+            Serial.println();
+          }
+      }
      // open the file. note that only one file can be open at a time,
      // so you have to close this one before opening another.
      File dataFile = SD.open("datalog.txt", FILE_WRITE);
      // if the file is available, write to it:
      if (dataFile) {
+        // Flash LED
+        digitalWrite(LED_BUILTIN,HIGH);
+        delay(1000);
+        digitalWrite(LED_BUILTIN,LOW);
+        // Build up output string
        dataString = "loop ";
        dataString += String(writeCounter);
+       // if GPS data is available then write to SD card
+        if (GPS.available()) {
+          dataString += "Location: ";
+            dataString += String(latitude, 7);
+            dataString += ", ";
+            dataString += String(longitude, 7);
+            dataString += "Altitude: ";
+            dataString += String(altitude);
+            dataString += "m, ";
+            dataString += "Ground speed: ";
+            dataString += String(speed);
+            dataString += " km/h";
+            dataString += "Number of satellites: ";
+            dataString += String(satellites);
+        }
        dataFile.println(dataString);
        dataFile.close();
         // print to the serial port too:
@@ -76,11 +136,6 @@ void loop() {
        if (debugMode) Serial.println("error opening datalog.txt");
      }
   }
- 
-    digitalWrite(LED_BUILTIN,HIGH);
-    delay(1000);
-    digitalWrite(LED_BUILTIN,LOW);
-    delay(1000);
   }
   else
   {
