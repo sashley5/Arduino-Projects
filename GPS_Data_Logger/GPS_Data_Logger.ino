@@ -9,7 +9,7 @@ const boolean debugMode = false;
 // Variable to hold the write counter
 int writeCounter;
 // Variable to hold number of loops between writes
-const int loopsBetweenWrites = 50;
+const int loopsBetweenWrites = 10;
 // Variable to hold counter of number of loops
 int numLoops;
 
@@ -28,7 +28,7 @@ void setup() {
   // and similarly the switch as an input
   pinMode(SwitchInputPin, INPUT);
   // Initialise the write counter
-  writeCounter = 200;
+  writeCounter = 0;
   //Initalize the loop counter so it will write on the first time through
   numLoops = loopsBetweenWrites - 1;
    
@@ -76,6 +76,8 @@ void loop() {
       numLoops = 0;
       // check if there is new GPS data available
       if (GPS.available()) {
+         // Flash LED if satellite found
+         digitalWrite(LED_BUILTIN,HIGH);
          // read GPS values
           latitude   = GPS.latitude();
           longitude  = GPS.longitude();
@@ -103,8 +105,6 @@ void loop() {
      File dataFile = SD.open("datalog.txt", FILE_WRITE);
      // if the file is available, write to it:
      if (dataFile) {
-        // Flash LED
-        digitalWrite(LED_BUILTIN,HIGH);
         // Build up output string
        dataString = "loop ";
        dataString += String(writeCounter);
