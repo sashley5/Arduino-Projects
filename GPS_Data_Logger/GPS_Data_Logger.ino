@@ -4,12 +4,12 @@
 
 const int chipSelect = SDCARD_SS_PIN;
 const int SwitchInputPin = 2;
-const boolean debugMode = true;
+const boolean debugMode = false;
 
 // Variable to hold the write counter
 int writeCounter;
 // Variable to hold number of loops between writes
-const int loopsBetweenWrites = 30;
+const int loopsBetweenWrites = 50;
 // Variable to hold counter of number of loops
 int numLoops;
 
@@ -28,7 +28,7 @@ void setup() {
   // and similarly the switch as an input
   pinMode(SwitchInputPin, INPUT);
   // Initialise the write counter
-  writeCounter = 0;
+  writeCounter = 200;
   //Initalize the loop counter so it will write on the first time through
   numLoops = loopsBetweenWrites - 1;
    
@@ -41,12 +41,12 @@ void setup() {
   if (debugMode) Serial.println("card initialized.");
 
    // Initalize the GPS shield
-   if (!GPS.begin(GPS_MODE_SHIELD)) {
+   if (!GPS.begin(GPS_MODE_I2C)) {
      if (debugMode) Serial.println("Failed to initialize GPS!");
      while (1);
 
   }
-   if (debugMode) Serial.println("GPS initialized.");
+   if (debugMode) Serial.println("GPS library initialized.");
 }
 //A variable to hold the value of the button - High (TRUE) or Low (FALSE)
 boolean buttonValue;
@@ -63,7 +63,8 @@ void loop() {
    float speed;
    int  satellites;
   // First read the state of the button
-  buttonValue = digitalRead (SwitchInputPin);
+  // buttonValue = digitalRead (SwitchInputPin);
+  buttonValue = true;
   // Now decide what to do
   if (buttonValue)
   {
@@ -98,8 +99,7 @@ void loop() {
             Serial.println();
           }
       }
-     // open the file. note that only one file can be open at a time,
-     // so you have to close this one before opening another.
+     // open the file
      File dataFile = SD.open("datalog.txt", FILE_WRITE);
      // if the file is available, write to it:
      if (dataFile) {
@@ -110,7 +110,7 @@ void loop() {
        dataString += String(writeCounter);
        // if GPS data is available then write to SD card
         if (GPS.available()) {
-          dataString += "Location: ";
+          dataString += " Location: ";
             dataString += String(latitude, 7);
             dataString += ", ";
             dataString += String(longitude, 7);
