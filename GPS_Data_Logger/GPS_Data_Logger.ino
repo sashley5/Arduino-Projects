@@ -12,6 +12,16 @@ int writeCounter;
 const int loopsBetweenWrites = 10;
 // Variable to hold counter of number of loops
 int numLoops;
+//A variable to hold the value of the button - High (TRUE) or Low (FALSE)
+bool buttonValue;
+// Define the GPS variables
+float latitude;
+float longitude;
+float altitude;
+float speed;
+int  satellites;
+unsigned long epochTime;
+bool GPSdataAvailable;
 
 void setup() {
   if (debugMode) {
@@ -41,27 +51,22 @@ void setup() {
   if (debugMode) Serial.println("card initialized.");
 
    // Initalize the GPS shield
-   if (!GPS.begin(GPS_MODE_I2C)) {
+   if (!GPS.begin(GPS_MODE_SHIELD)) {
      if (debugMode) Serial.println("Failed to initialize GPS!");
      while (1);
 
   }
    if (debugMode) Serial.println("GPS library initialized.");
 }
-//A variable to hold the value of the button - High (TRUE) or Low (FALSE)
-boolean buttonValue;
+
 
 void loop() {
   // Increment the loop counter
    numLoops++;
+  
   // make a string for assembling the data to log:
    String dataString = "";
-   // Define the GPS variables
-   float latitude;
-   float longitude;
-   float altitude;
-   float speed;
-   int  satellites;
+
   // First read the state of the button
   // buttonValue = digitalRead (SwitchInputPin);
   buttonValue = true;
@@ -74,16 +79,18 @@ void loop() {
       writeCounter ++;
       // Reset loop counter
       numLoops = 0;
+      // Flash LED each time through
+      digitalWrite(LED_BUILTIN,HIGH);
       // check if there is new GPS data available
       if (GPS.available()) {
-         // Flash LED if satellite found
-         digitalWrite(LED_BUILTIN,HIGH);
+         GPSdataAvailable=true;
          // read GPS values
           latitude   = GPS.latitude();
           longitude  = GPS.longitude();
           altitude   = GPS.altitude();
           speed      = GPS.speed();
           satellites = GPS.satellites();
+          epochTime = GPS.getTime();
           if (debugMode) {
             // print GPS values
             Serial.print("Location: ");
@@ -99,6 +106,8 @@ void loop() {
             Serial.print("Number of satellites: ");
             Serial.println(satellites);
             Serial.println();
+            Serial.print("Epoch time: ");
+            Serial.println(epochTime);
           }
       }
      // open the file
@@ -108,8 +117,8 @@ void loop() {
         // Build up output string
        dataString = "loop ";
        dataString += String(writeCounter);
-       // if GPS data is available then write to SD card
-        if (GPS.available()) {
+       // if GPS data is available then write that data to the SD card
+        if (GPSdataAvailable) {
           dataString += " Location: ";
             dataString += String(latitude, 7);
             dataString += ", ";
@@ -122,6 +131,8 @@ void loop() {
             dataString += " km/h";
             dataString += "Number of satellites: ";
             dataString += String(satellites);
+            dataString += "Epoch time: ";
+            dataString += String(epochTime);
         } //end if GPS available
        dataFile.println(dataString);
        dataFile.close();
@@ -140,6 +151,7 @@ void loop() {
     digitalWrite(LED_BUILTIN,LOW);
   }
   delay(1000);
-  digitalWrite(LED_BUILTIN,LOW);
+  // if GPS data is available leave he LED on
+  if (!GPSdataAvailable) digitalWrite(LED_BUILTIN,LOW);
   delay(1000);
 } // end loop
