@@ -4,7 +4,7 @@
 
 const int chipSelect = SDCARD_SS_PIN;
 const int SwitchInputPin = 2;
-const bool debugMode = true;
+const bool debugMode = false;
 
 // Variable to hold the write counter
 int writeCounter;
