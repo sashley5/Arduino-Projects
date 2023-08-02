@@ -21,7 +21,7 @@ float altitude;
 float speed;
 int  satellites;
 unsigned long epochTime;
-bool GPSdataAvailable;
+bool GPSdataAvailable = false;
 
 void setup() {
   if (debugMode) {
@@ -68,9 +68,9 @@ void loop() {
    String dataString = "";
 
   // First read the state of the button
-  // buttonValue = digitalRead (SwitchInputPin);
-  buttonValue = true;
-  // Now decide what to do
+  buttonValue = digitalRead (SwitchInputPin);
+  
+  // If the switch is pressed down, process the GPS data
   if (buttonValue)
   {
     if (numLoops >= loopsBetweenWrites)
@@ -109,6 +109,9 @@ void loop() {
             Serial.print("Epoch time: ");
             Serial.println(epochTime);
           }
+      }
+      else {
+        GPSdataAvailable=false;
       }
      // open the file
      File dataFile = SD.open("datalog.txt", FILE_WRITE);
