@@ -15,14 +15,15 @@ void loop() {
   // Now decide what to do
   if (buttonValue)
   {
+    // Turn on the LED if the button is pushed down
     digitalWrite(LED_BUILTIN,HIGH);
-    delay(1000);
-    digitalWrite(LED_BUILTIN,LOW);
     delay(1000);
   }
   else
   {
+    // Turn off the LED if the button is not pushed down
     digitalWrite(LED_BUILTIN,LOW);
+    delay(1000);
   }
 }
 
