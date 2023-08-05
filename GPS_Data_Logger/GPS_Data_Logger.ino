@@ -9,7 +9,7 @@ const bool debugMode = false;
 // Variable to hold the write counter
 int writeCounter;
 // Variable to hold number of loops between writes
-const int loopsBetweenWrites = 10;
+const int loopsBetweenWrites = 5; // 10 second sample period
 // Variable to hold counter of number of loops
 int numLoops;
 //A variable to hold the value of the button - High (TRUE) or Low (FALSE)
@@ -154,7 +154,7 @@ void loop() {
     digitalWrite(LED_BUILTIN,LOW);
   }
   delay(1000);
-  // if GPS data is available leave he LED on
+  // if GPS data is available leave the LED on
   if (!GPSdataAvailable) digitalWrite(LED_BUILTIN,LOW);
   delay(1000);
 } // end loop
