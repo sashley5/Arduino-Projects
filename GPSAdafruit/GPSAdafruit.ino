@@ -1,7 +1,7 @@
 #include <Adafruit_GPS.h>
 
 Adafruit_GPS GPS(&Serial1);
-const bool debugMode = false;
+const bool debugMode = true;
 
 void setup()
 {
@@ -20,16 +20,18 @@ void setup()
   GPS.sendCommand(PGCMD_ANTENNA);
   delay(1000);
 
-  if (debugMode) Serial.println(PMTK_Q_RELEASE);
+  if (debugMode) {
+    Serial.print("PMTK_Q_RELEASE: ");
+    Serial.println(PMTK_Q_RELEASE);
+  } 
 }
 
 uint32_t timer = millis();
+
 void loop()
 {
   if (Serial1.available())  //test if GPS data is available
   {
-    // if (debugMode) Serial.println("Serial1 is available"); 
-
     // Read some GPS data
     char c = GPS.read();
     if (debugMode) {
@@ -45,6 +47,20 @@ void loop()
     // Output data every 2 seconds
     if (millis() - timer > 2000) {
       timer = millis();
+    if (debugMode) Serial.println("Serial1 is available"); 
+    if (debugMode) {
+      // Serial.print("\nTime: ");
+      // Serial.print(GPS.hour, DEC); Serial.print(':');
+      // Serial.print(GPS.minute, DEC); Serial.print(':');
+      // Serial.print(GPS.seconds, DEC); Serial.print('.');
+      // Serial.println(GPS.milliseconds);
+      // Serial.print("Date: ");
+      // Serial.print(GPS.day, DEC); Serial.print('/');
+      // Serial.print(GPS.month, DEC); Serial.print("/20");
+      // Serial.println(GPS.year, DEC);
+      // Serial.print("Fix: "); Serial.print((int)GPS.fix);
+      // Serial.print(" quality: "); Serial.println((int)GPS.fixquality);
+    }
     
       // Test GPS processing
       // if (debugMode) Serial.println("GPS processing");
@@ -59,7 +75,7 @@ void loop()
     } // end if timer is 2 seconds
   } // end if serial available
   else {
-    //if (debugMode) Serial.println("Serial1 is unavailable"); 
+    if (debugMode) Serial.println("Serial1 is unavailable"); 
     // Turn off LED
     digitalWrite(LED_BUILTIN,LOW);
     delay(2000);
