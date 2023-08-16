@@ -4,7 +4,7 @@
 
 const int chipSelect = SDCARD_SS_PIN;
 const int SwitchInputPin = 2;
-const bool debugMode = false;
+const bool debugMode = true;
 
 // Variable to hold the write counter
 int writeCounter;
@@ -68,7 +68,8 @@ void loop() {
    String dataString = "";
 
   // First read the state of the button
-  buttonValue = digitalRead (SwitchInputPin);
+  // buttonValue = digitalRead (SwitchInputPin);
+  buttonValue = true;
   
   // If the switch is pressed down, process the GPS data
   if (buttonValue)
@@ -79,11 +80,15 @@ void loop() {
       writeCounter ++;
       // Reset loop counter
       numLoops = 0;
-      // Flash LED each time through
-      digitalWrite(LED_BUILTIN,HIGH);
+
       // check if there is new GPS data available
       if (GPS.available()) {
          GPSdataAvailable=true;
+         // Turn on the LED if GPS available
+        digitalWrite(LED_BUILTIN,HIGH);
+        // Output a message
+        if (debugMode) Serial.println("GPS available");
+
          // read GPS values
           latitude   = GPS.latitude();
           longitude  = GPS.longitude();
